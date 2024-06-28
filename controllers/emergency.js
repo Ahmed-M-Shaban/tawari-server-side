@@ -1,8 +1,6 @@
 const path = require("path");
 const fs = require("fs");
 
-const detect = require("detect-file-type");
-
 const Emergency = require("../models/Emergency");
 const User = require("../models/User");
 
@@ -19,21 +17,16 @@ const deleteEmerMedia = (req) => {
 
 const createEmergency = async (req, res, next) => {
   req.body.user = req.userId;
-  let { title, user, dispatcher, phone, longitude, latitude, media } = req.body;
-  let mediaType;
-
-  await new Promise((resolve, reject) => {
-    detect.fromFile(
-      path.join(__dirname, "..", "uploads", "media", req.body.media),
-      function (err, result) {
-        if (err) {
-          return reject(err);
-        }
-        resolve(result.mime.split("/")[0]);
-        // return (mediaType = result.mime.split("/")[0]); // { ext: 'jpg', mime: 'image/jpeg' }
-      }
-    );
-  }).then((doc) => (mediaType = doc));
+  let {
+    title,
+    user,
+    dispatcher,
+    phone,
+    longitude,
+    latitude,
+    media,
+    mediaType,
+  } = req.body;
 
   const userInfo = await User.findById(user).lean().exec();
 
@@ -46,7 +39,6 @@ const createEmergency = async (req, res, next) => {
   phone = phone || userInfo.phone;
   longitude = longitude || userInfo.longitude;
   latitude = latitude || userInfo.latitude;
-  // console.log(mediaType);
   const emergency = await Emergency.create({
     title,
     user,
